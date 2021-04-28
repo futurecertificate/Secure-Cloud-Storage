@@ -47,7 +47,7 @@ def rsa_decrypt(encrypted_item, private_key):
     return decrypted
 
 def get_private_key():
-    with open("./resources/rsa_private_key.pem", "rb") as key_file:
+    with open("./keys/rsa_private_key.pem", "rb") as key_file:
                 private_key = serialization.load_pem_private_key(
                     key_file.read(),
                     password=None,
@@ -57,7 +57,7 @@ def get_private_key():
 
 def get_public_key():
     public_key = serialization.load_pem_public_key(
-        open("./resources/rsa_public_key.pem", "rb").read(),
+        open("./keys/rsa_public_key.pem", "rb").read(),
         backend=default_backend()
     )
     return public_key

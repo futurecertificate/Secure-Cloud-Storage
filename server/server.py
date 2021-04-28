@@ -33,6 +33,27 @@ def index():
 def get_images(filename):
     return send_from_directory(static, filename)
 
+@app.route("/password", methods=['POST'])
+def get_cred():
+    f = json.load(open("./resources/ip_access.json"))
+    if request.remote_addr not in f:
+        f[request.remote_addr] = 0
+        with open("./resources/ip_access.json", "w") as ip_file:
+            json.dump(f, ip_file)
+    else:
+        f[request.remote_addr] = f[request.remote_addr] + 1
+        with open("./resources/ip_access.json", "w") as ip_file:
+            json.dump(f, ip_file)
+        if f[request.remote_addr] >= 100:
+            return Response("Unauthorized. - Accesses exhausted for address.", 403)
+    username = base64.b64decode(request.authorization["username"])
+    username = rsa_decrypt(username, get_private_key()).decode()
+    if username not in json.load(open("./resources/secure_cloud_storage_group.json", "rb"))["Users"]:
+        return Response("Unauthorized. - User does not belong to remote access group.", 403)
+    else:
+        return Response("",200)
+
+
 @app.route('/upload/', methods=['POST'])
 def upload_file():
 
@@ -66,7 +87,7 @@ def upload_file():
             
             iv = os.urandom(16) # SAVE THIS SOMEWHERE
             
-            with open("./resources/aes_key.pem", "rb") as key_file:
+            with open("./keys/aes_key.pem", "rb") as key_file:
                 local_aes = key_file.read()
                 encrypted_file_with_aes = aes_encrypt(iv, local_aes, decoded_unpadded_file)
 
@@ -122,7 +143,7 @@ def download_file():
                 backend=default_backend()
             )
 
-            encrypted_aes = rsa_encrypt(open("./resources/aes_key.pem", "rb").read(), public_key)
+            encrypted_aes = rsa_encrypt(open("./keys/aes_key.pem", "rb").read(), public_key)
 
             response = send_from_directory(storage, filename)
             response.headers["aes"] = base64.b64encode(encrypted_aes)
@@ -200,7 +221,7 @@ def user_mgmt():
 @app.route('/publickey/', methods=['POST'])
 def give_group_member_public_key():
 
-    return base64.b64encode(open("./resources/rsa_public_key.pem", "rb").read())
+    return base64.b64encode(open("./keys/rsa_public_key.pem", "rb").read())
 
 # this might take time when called
 @app.route('/privatekey/', methods=['POST'])
@@ -226,7 +247,7 @@ def auto_create_private_key():
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=serialization.NoEncryption()
     )
-    with open('./resources/rsa_private_key.pem', 'wb') as f:
+    with open('./keys/rsa_private_key.pem', 'wb') as f:
         f.write(private_pem)
 
     public_pem = public_key.public_bytes(
@@ -234,13 +255,17 @@ def auto_create_private_key():
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    with open('./resources/rsa_public_key.pem', 'wb') as f:
+    with open('./keys/rsa_public_key.pem', 'wb') as f:
         f.write(public_pem)  
 
     aes_key = os.urandom(32)
-    with open('./resources/aes_key.pem', 'wb') as f:
+    with open('./keys/aes_key.pem', 'wb') as f:
          f.write(aes_key)
 
 if __name__ == "__main__": 
         # auto_create_private_key() # uncomment to automatically create new public and private keys on starting server
+        ip_accesses = {}
+        f = open("./resources/ip_access.json", "w")
+        json.dump(ip_accesses, f)
+        f.close()
         app.run() 
