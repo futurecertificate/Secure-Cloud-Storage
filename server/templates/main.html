@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <meta charset="utf-8">
+    <title>Secure Cloud Storage Console</title>
+    <style>
+        body {
+            background-image: url('static/bg.png');
+        }
+
+        text {
+            font-family: 'Mukta', serif;
+        }
+
+
+        .page_title {
+            font-family: "Times New Roman";
+            font-size: 44px;
+            width: 50%;
+            text-align: center;
+            align:center;
+            margin:auto;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .tooltip {
+            width: 94px;
+            padding: 4px 10px;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: absolute;
+            background-color: white;
+            font-size: 14px;
+            pointer-events: none;
+            -webkit-transition: all 0.25s;
+            -moz-transition: all 0.25s;
+            -ms-transition: all 0.25s;
+            -o-transition: all 0.25s;
+            transition: all 0.25s;
+        }
+
+        
+        .submit_form {
+            padding-left: 28%;
+            width: 33%;
+            float: left;
+            font-family: 'Times New Roman';
+        }
+
+        input {
+            height: 100%;
+            width: 60%;
+            margin: auto;
+            font-family: 'Mukta', serif;
+            font-size: 18px;
+        }
+
+        button {
+            height: 100%;
+            font-family: 'Mukta', serif;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+
+
+
+<body onload="init()">
+    <h1 class="page_title" id="page_title">
+
+    <img src="static/typiggg.gif" alt="Italian Trulli">
+    </h1>
+    <div id="main">
+    <h2 id= "files">
+    All Files
+    <ul id="fileslist">
+    </ul>
+    </h2>
+    </div>
+    
+    <section id="data_display" class="data_display" style="padding-top: 20px; padding-bottom: 20px">
+        
+    </section>
+</body>
+<script>
+    var i = 0;
+    var txt = 'Server Management'; /* The text */
+    var speed = 20; /* The speed/duration of the effect in milliseconds */
+    function init(){
+        typeWriter();
+        get_files();
+    }
+    function typeWriter() {
+        
+        if (i < txt.length) {
+            document.getElementById("page_title").innerHTML += txt.charAt(i);
+            i++;
+            setTimeout(typeWriter, speed);
+        }
+    }
+    
+    function get_files(){
+        
+        fetch('/files/', {
+            method: 'POST',
+            headers:{
+                "username": "CRAIG_WRIGHT"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(function (item){
+                d3.select("#fileslist").append("li").text(item)
+            });
+        })
+    }
+
+    function remove_user(){
+
+        fetch('/files/', {
+            method: 'POST',
+            headers:{
+                "username": "CRAIG_WRIGHT"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(function (item){
+                d3.select("#fileslist").append("li").text(item)
+            });
+        })
+    }
+</script>
+
+</html>

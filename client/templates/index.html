@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <title>
+    Sendy the Files
+    </title>
+    <style>
+    body {
+            background-image: url('static/bg.png');
+        }
+    </style>
+</head>
+
+<body>
+    <div style="margin:auto;width:20%;padding-top:100px;">
+        <label for="cred">Username:</label>
+        <input value="Username" type="text", id="cred"/>
+        <div class="upload_form">
+                <input type="file" id="fileUpload" />
+                <button onclick="upload_files()" >Upload</button>
+        </div>
+        <div class="download_form">
+                <input type="text" id="fileDownload" />
+                <button onclick="download_files()" >Download</button>
+        </div>
+        <div class="remove_form">
+                <input type="text" id="removeFile" />
+                <button onclick="remove_files()" >Remove</button>
+        </div>
+        <div>
+        <a id="download_link" download>
+            <p>Download file</p>
+        </a>
+        <img id="dragonimage" src="static/drgaon.png" alt="Italian Trulli">
+        </div>
+    </div>
+</body>
+
+<script>
+    function upload_files(){
+        var x = document.getElementById("fileUpload");
+        const files = x.files
+        const formData = new FormData()
+        formData.append('file', files[0])
+        formData.append('username','test')
+
+        fetch('/upload/', {
+            method: 'POST',
+            body: formData,
+            headers:{
+                "username": document.getElementById("cred").value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+        })
+        .catch(error => {
+            console.error(error)
+        })
+    }
+    
+
+    function download_files(){
+        var user_input = document.getElementById("fileDownload").value;
+        const formData = new FormData()
+        formData.append('filename', user_input)
+
+        fetch('/download/', {
+            method: 'POST',
+            body: formData,
+            headers:{
+                "username": document.getElementById("cred").value
+            }
+        })
+        .then(response => {
+            var downloadString = "/downloads/" + user_input
+            d3.select("#download_link").attr("href", downloadString).attr("download", user_input)
+            d3.select("#dragonimage").attr("src",downloadString)
+        })
+        .catch(error => {
+            console.error(error)
+        })
+    }
+    
+    function remove_files(){
+        var user_input = document.getElementById("removeFile").value;
+        const formData = new FormData()
+        formData.append('filename', user_input)
+
+        fetch('/remove/', {
+            method: 'POST',
+            body: formData,
+            headers:{
+                "username": document.getElementById("cred").value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+        })
+        .catch(error => {
+            console.error(error)
+        })
+    }
+
+    function get_files(){
+        
+    }
+</script>
+</html>
